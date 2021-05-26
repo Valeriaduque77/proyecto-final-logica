@@ -1,0 +1,488 @@
+
+
+#include <iostream>
+using namespace std;
+
+/* ------------------------// Globales \\------------------------ */
+int const fila = 4;
+int const columna = 5;
+
+/* ------------------------// Declaracion de funciones iniciales, llenado y verificacion \\------------------------ */
+void llenarNombres( string nombresPuertos[], int numeroPuertos );
+void limpiarMatrizBooleana( bool disponibilidad[fila][columna] );
+void limpiarMatrizEnteros( int peso[fila][columna] );
+void mostrarDisponibilidad( bool disponibilidad[fila][columna] );
+bool verificarPosicion( int posicionFila, int posicionColumna, bool disponibilidad[fila][columna] );
+void llenadoMatrices( string marca[fila][columna], int peso[fila][columna], string puertoCarga[fila][columna], string tipoArticulo[fila][columna], int posicionFila, int posicionColumna, string puerto );
+void informacionDelPuerto( int numeroContenedores, string nombrePuerto, string puertoCarga[fila][columna] );
+
+/* ------------------------// Menu funciones \\------------------------ */
+void menuProcedimientos( int numeroPuertos, int cantidadContenedores, string marca[fila][columna], string puertoCarga[fila][columna], string nombresPuertos[], int contenedoresPorPuerto[] );
+void menuFunciones( int numeroPuertos, int cantidadContenedores, string marca[fila][columna], int peso[fila][columna], string puertoCarga[fila][columna], string tipoArticulo[fila][columna] );
+
+/* ------------------------// Declaracion de procedimientos \\------------------------ */
+void ordenadoDePuertos( int numeroPuertos, string nombresPuertos[], int contenedoresPorPuerto[] );
+void listadoZonaEconomica( string marca[fila][columna] );
+void listadoZonaPremium( string marca[fila][columna] );
+
+/* ------------------------// Declaracion de funciones \\------------------------ */
+void buscarUnaMarca( string marca[fila][columna], string busquedaMarca );
+float promedioPeso( int cantidadContenedores, int peso[fila][columna] );
+int filaMasPesada( int peso[fila][columna] );
+int columnaMenosPesada( int peso[fila][columna] );
+int cantidadTipoContenedor( string tipoArticulo[fila][columna], string busquedaTipoContenedor );
+float promedioDelPuerto(  int peso[fila][columna], string puertoCarga[fila][columna], string busquedaPuerto );
+void empresaConMasPeso( int peso[fila][columna], string marca[fila][columna] );
+void empresaConMenosPeso( int peso[fila][columna], string marca[fila][columna] );
+
+/* ------------------------// Funcion principal (main) \\------------------------ */
+int main() {
+    /* ------------------------// Declaracion de variables \\------------------------ */
+    int numeroPuertos = 0;
+    int cantidadContenedores = 0;
+
+    while ( numeroPuertos <= 0 ) { /* Valida que ingrese un numero correcto de puntos ( > 0 ) */
+        cout << "Ingrese el numero de puertos totales " << endl << "--> ";
+        cin >> numeroPuertos; 
+        if ( numeroPuertos <= 0 )
+            cout << "Ingrese un numero valido ( mayor a 0 ) " << endl;
+    }
+
+    /* ------------------------// Declaracion de vectores \\------------------------ */
+    string nombresPuertos[numeroPuertos]; /* Guarda cada uno de los nombres del puerto */
+    int contenedoresPorPuerto[numeroPuertos]; /* Guarda la cantidad de contenedores por puerto */
+    
+    /* ------------------------// Declaracion de matrices \\------------------------ */
+    bool disponibilidad[fila][columna];
+    string marca[fila][columna];
+    int peso[fila][columna];
+    string puertoCarga[fila][columna];
+    string tipoArticulo[fila][columna];
+
+    /* ------------------------// Llamado de funciones iniciales \\------------------------ */
+    llenarNombres( nombresPuertos, numeroPuertos ); /* Registra los nombres de cada puerto a visitar */
+    limpiarMatrizBooleana( disponibilidad ); /* Limpia la matriz de disponibilidad con 1 */
+    limpiarMatrizEnteros( peso ); /* Limpia la matriz de peso con 0 */
+    
+    /* ------------------------// Llenado y verificacion \\------------------------ */
+    for ( int i = 0; i < numeroPuertos; i++ ) { /* For para cada puerto */
+        cout << "\n\tBienvenido al puerto " << nombresPuertos[i] << endl;
+        cout << "Ingrese el numero de contenedores a ingresar " << endl << "--> ";
+        cin >> contenedoresPorPuerto[i];
+        
+        cantidadContenedores += contenedoresPorPuerto[i]; /* Acomula el numero de contenedores del barco */
+        
+        for ( int j = 0; j < contenedoresPorPuerto[i]; j++ ) { /* For para cada contenedor */
+            bool disponible = false;
+            int posicionFila = 0;
+            int posicionColumna = 0;
+
+            while ( disponible == false ) { /* Se va a repetir mientras la info no sea valida */
+                mostrarDisponibilidad( disponibilidad ); /* Muestra los lugares disponibles del barco */
+
+                /* Seleccion de puesto en la matriz */
+                cout << "Ingrese la fila " << endl << "--> ";
+                cin >> posicionFila;
+                cout << "Ingrese la columna " << endl << "--> ";
+                cin >> posicionColumna;
+                
+                /* Verificacion de que el lugar este disponible */
+                disponible = verificarPosicion( posicionFila, posicionColumna, disponibilidad ); 
+            } 
+            /* Llena las matrices con sus respectivos datos en las pisiciones previamente dadas */
+            llenadoMatrices( marca, peso, puertoCarga, tipoArticulo, posicionFila, posicionColumna, nombresPuertos[i] );
+        }
+        /* Informacion por puerto */
+        cout << "\tInformacion del puerto: " << endl;
+        informacionDelPuerto( contenedoresPorPuerto[i], nombresPuertos[i], puertoCarga );
+    }
+
+    /* ------------------------// Menu principal \\------------------------ */
+    int option = 0;
+    while ( option != 3 ) {
+    	cout << "\n\tMenu Principal: " << endl;
+		cout << "\t1.Procedimientos" << "\n\t2.Funciones" << "\n\t3.Salir" << endl << endl;
+		cout << "\tElige una opcion: " << "\n--> ";
+		cin >> option;
+		cout << endl << endl;
+
+        if ( option == 1 ) {
+            menuProcedimientos( numeroPuertos, cantidadContenedores, marca, puertoCarga, nombresPuertos, contenedoresPorPuerto );
+        } else if ( option == 2 ) {
+            menuFunciones( numeroPuertos, cantidadContenedores, marca, peso, puertoCarga, tipoArticulo );
+        } else if ( option == 3 ) {
+            cout << "Gracias por usar el programa :)" << endl << endl;
+        } else if ( option != 3) {
+            cout << "Ingrese una opcion correcta!"	<< endl << endl;
+        }
+	}
+}
+
+/* ------------------------// Funciones iniciales, llenado y verificacion \\------------------------ */
+void llenarNombres( string nombresPuertos[], int numeroPuertos ) {
+    for ( int i = 0; i < numeroPuertos; i++ ) {
+        cout << "Ingrese el puerto " << ( i + 1 ) << endl << "--> ";
+        cin >> nombresPuertos[i];
+    }
+}
+
+void limpiarMatrizBooleana( bool disponibilidad[fila][columna] ) {
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            disponibilidad[i][j] = 1;
+        }
+    }
+}
+
+void limpiarMatrizEnteros( int peso[fila][columna] ) {
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            peso[i][j] = 0;
+        }
+    }
+}
+
+void mostrarDisponibilidad( bool disponibilidad[fila][columna] ) {
+    cout << endl << "\n\t\t\tPuestos del barco " << endl << endl; /* \t = genera un tabulador en consola || \n = endl */
+    cout << "\t\t |f/c||   0 || 1 || 2 || 3 || 4 | " << endl << endl;
+    for ( int i = 0; i < fila; i++ ) {
+        cout << "\t\t" << " | " << i << " ||   ";
+        for ( int j = 0; j < columna; j++ ) {
+            cout << disponibilidad[i][j];
+            if ( j < columna - 1 )  /* Ayuda esteticamente a formar como una tabla y al final solo agregar 1 palo en vez de 2 */
+                cout << " || ";
+        }
+        cout << " | " << endl;  
+    }
+    cout << endl << endl;
+}
+
+bool verificarPosicion( int posicionFila, int posicionColumna, bool disponibilidad[fila][columna] ) {
+    bool disponible = true;
+
+    if ( ( posicionFila >= 0 && posicionColumna >= 0 ) && ( posicionFila < fila && posicionColumna < columna ) ) { /* Verifica que las posiciones dadas esten en el rango */
+        if ( disponibilidad[posicionFila][posicionColumna] == 1 ) { /* Verifica que la posicion esta disponible o esta ocupada */
+            disponibilidad[posicionFila][posicionColumna] = 0;
+            disponible = true;
+        } else {
+            disponible = false;
+            cout << "\nNo disponible" << endl;
+        }
+    } else {
+        disponible = false;
+        cout << "\nLos valores ingresados no son correctos" << endl;
+    }
+
+    return disponible;
+}
+
+void llenadoMatrices( string marca[fila][columna], int peso[fila][columna], string puertoCarga[fila][columna], string tipoArticulo[fila][columna], int posicionFila, int posicionColumna, string puerto ) {
+    cout << "Ingrese la marca " << endl << "--> ";
+    cin >> marca[posicionFila][posicionColumna];
+    cout << "Ingrese el peso " << endl << "--> ";
+    cin >> peso[posicionFila][posicionColumna];
+
+    puertoCarga[posicionFila][posicionColumna] = puerto;
+
+    cout << "\n\t(Tipo A: Alimentos, Tipo B: Dispositivos electronicos, Tipo C: Ropa y demas textiles)" << endl << endl;
+    cout << "Ingrese el tipo " << endl << "--> ";
+    cin >> tipoArticulo[posicionFila][posicionColumna];
+    cout << endl;
+}
+
+void informacionDelPuerto( int numeroContenedores, string nombrePuerto, string puertoCarga[fila][columna] ) {
+    int valorTotal = 0;
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( puertoCarga[i][j] == nombrePuerto ) {
+                if ( ( i > 0 && i < fila - 1 ) && ( j > 0 && j < columna - 1 ) ) /* Verifica que i y j apunten a la zona premium */
+                    valorTotal += 300;
+                else 
+                    valorTotal += 100;
+            }
+        }
+    }
+
+    float porcentaje = ( numeroContenedores * 100 ) / ( fila * columna );
+
+    cout << "- El porcentaje de ocupacion del barco es de " << porcentaje << endl;
+    cout << "- El valor total recaudado es de " << valorTotal << endl << endl;
+}
+
+/* ------------------------// Menu \\------------------------ */
+void menuProcedimientos( int numeroPuertos, int cantidadContenedores, string marca[fila][columna], string puertoCarga[fila][columna], string nombresPuertos[], int contenedoresPorPuerto[] ) {
+    int option = 0;
+    while ( option != 5 ) {
+		cout << "\n\tMenu Procedimientos: " << endl;
+		cout << "\t1.Total contenedores" << "\n\t2.Listado ordenado de los puertos" << endl;
+		cout << "\t3.Listado marcas en zona economica" << "\n\t4.Listado marcas en zona premium" << "\n\t5.Atras" << endl << endl;
+		cout << "\tElige una opcion: " << "\n--> ";
+		cin >> option;
+		cout << endl << endl;
+        cout << "-----------------------------------//-----------------------------------" << endl << endl;
+        if ( option == 1 ) {
+		    cout << "- El numero total de contenedores ingresados es de " << cantidadContenedores << endl << endl; 
+        } else if ( option == 2 ) {
+            ordenadoDePuertos( numeroPuertos, nombresPuertos, contenedoresPorPuerto ); /* Lista los puertos con Mayor a Menor contenedores */ 
+        } else if ( option == 3 ) {
+            listadoZonaEconomica( marca ); /* Muestra las marcas de la zona economica */
+        } else if ( option == 4 ) {
+            listadoZonaPremium( marca ); /* Muestra las marcas de la zona premium */
+        } else if ( option != 5 ) {
+            cout << "- Opcion incorrecta" << endl << endl;
+        }
+        cout << "-----------------------------------//-----------------------------------" << endl;
+	}
+}
+
+void menuFunciones( int numeroPuertos, int cantidadContenedores, string marca[fila][columna], int peso[fila][columna], string puertoCarga[fila][columna], string tipoArticulo[fila][columna] ) {
+    int option = 0;
+    while ( option != 9 ) {
+        cout << "\n\tMenu Funciones: " << endl;
+        cout << "\t1.Buscar Marca" << "\n\t2.Promedio peso total" << "\n\t3.Fila mas pesada" << "\n\t4.Columna menos pesada";
+        cout << "\n\t5.Buscar tipos de contenedor" << "\n\t6.Promedio peso de un puerto";
+        cout << "\n\t7.Empresa con mas peso" << "\n\t8.Empresa con menos peso" << "\n\t9.Atras" << endl << endl;
+        cout << "\tElige una opcion: " << "\n--> ";
+        cin >> option;
+        cout << endl << endl;
+        cout << "-----------------------------------//-----------------------------------" << endl << endl;
+        if ( option == 1 ) {
+            string busquedaMarca = "";
+            cout << "Ingrese la marca a buscar " << endl << "--> ";
+            cin >> busquedaMarca;
+            buscarUnaMarca( marca, busquedaMarca ); /* Busca una marca en el barco y da detalles de esta */
+        } else if ( option == 2 ) {
+            float promedioTotalPeso = 0;
+            promedioTotalPeso = promedioPeso( cantidadContenedores, peso ); /* Retorna el promedio total del barco */
+            cout << "- El promedio total es " << promedioTotalPeso << endl << endl;
+        } else if ( option == 3 ) {
+            int filaMasPesadaDelBarco = 0;
+            filaMasPesadaDelBarco = filaMasPesada( peso ); /* Retorna la fila mas pesada del barco */
+            cout << "- La fila mas pesada es la " << filaMasPesadaDelBarco << endl << endl;
+        } else if ( option == 4 ) {
+            int columnaMenosPesadaDelBarco = 0;
+            columnaMenosPesadaDelBarco = columnaMenosPesada( peso ); /* Retorna la columna menos pesada del barco */
+            cout << "- La columna menos pesada es la " << columnaMenosPesadaDelBarco << endl << endl;
+        } else if ( option == 5 ) {
+            string busquedaTipoContenedor = "";
+            int totalContenedoresTipo = 0;
+            cout << "Ingrese la categoria a buscar " << endl << "--> ";
+            cin >> busquedaTipoContenedor;
+            totalContenedoresTipo = cantidadTipoContenedor( tipoArticulo, busquedaTipoContenedor ); /* Retorna la cantidad de   contenedores de un tipo */
+            cout << "\n- La categoria " << busquedaTipoContenedor << " tiene " << totalContenedoresTipo << " contenedores en el barco"  << endl << endl;
+        } else if ( option == 6 ) {
+            string busquedaPuerto = "";
+            float promedioPesoPuerto = 0;
+            cout << "Ingrese el puerto a buscar " << endl << "--> ";
+            cin >> busquedaPuerto;
+            promedioPesoPuerto = promedioDelPuerto( peso, puertoCarga, busquedaPuerto ); /* Rertorna el promedio de un puerto buscado */
+            cout << "\n- El puerto " << busquedaPuerto << " tiene un promedio de peso de " << promedioPesoPuerto << endl << endl;
+        } else if ( option == 7 ) {
+            empresaConMasPeso( peso, marca ); /* Muestra la marca con el contenedor mas pesado */
+        } else if ( option == 8 ) {
+            empresaConMenosPeso( peso, marca ); /* Muestra la marca con el contenedor menos pesado */
+        } else if ( option != 9 ) {
+            cout << "- Opcion incorrecta" << endl << endl;
+        }   
+        cout << "-----------------------------------//-----------------------------------" << endl;
+    }
+}
+
+/* ------------------------// Procedimientos \\------------------------ */
+void ordenadoDePuertos( int numeroPuertos, string nombresPuertos[], int contenedoresPorPuerto[] ) {
+    for ( int i = 0; i < numeroPuertos; i++ ) {
+		for ( int j = 0; j < numeroPuertos; j++ ) {
+			if ( contenedoresPorPuerto[i] > contenedoresPorPuerto[j] ) { /* Hace la comparacion de que puerto tiene mas contenedores */
+				int auxiliarContenedores = contenedoresPorPuerto[i]; /* Se hace el intecambio de posiciones en el vector contenedores */
+				contenedoresPorPuerto[i] = contenedoresPorPuerto[j];
+				contenedoresPorPuerto[j] = auxiliarContenedores;
+				
+				string auxiliarNombres = nombresPuertos[i]; /* Se hace el intecambio de posiciones en el vector nombres */
+				nombresPuertos[i] = nombresPuertos[j];
+				nombresPuertos[j] = auxiliarNombres;
+			}
+		}
+	}
+
+    cout << "\tPuertos ordenados de mayor a menor cargamento: " << endl;
+    for ( int i = 0; i < numeroPuertos; i++ ) { /* Se imprimen los dos vectores ya ordenados simultaneamente */
+        cout << "- " << nombresPuertos[i] << " --> " << contenedoresPorPuerto[i] << endl;
+    }
+    cout << endl << endl;
+}
+
+void listadoZonaEconomica( string marca[fila][columna] ) {
+    cout << "\tLas marcas que tiene los contenedores en la zona economica son: " << endl;
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( marca[i][j] != "" ) { /* Evita las posiciones que estan vacias */
+                if ( !( ( i > 0 && i < fila - 1 ) && ( j > 0 && j < columna - 1 ) ) ) { /* Evalua si el contenedor esta en las posiciones economica */
+                    cout << "- " << marca[i][j] << endl;
+                }
+            }
+        }
+    }
+    cout << endl << endl;
+}
+
+void listadoZonaPremium( string marca[fila][columna] ) {
+    cout << "\tLas marcas que tiene los contenedores en la zona premium son: " << endl;
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( marca[i][j] != "" ) { /* Evita las posiciones que estan vacias */
+                if ( ( i > 0 && i < fila - 1 ) && ( j > 0 && j < columna - 1 ) ) { /* Evalua si el contenedor esta en las posiciones premium */
+                    cout << "- " << marca[i][j] << endl;
+                }
+            }
+        }
+    }
+    cout << endl << endl;
+}
+
+/* ------------------------// Funciones \\------------------------ */
+void buscarUnaMarca( string marca[fila][columna], string busquedaMarca ) {
+    int contadorEconomica = 0;
+    int contadorPremium = 0;
+    int totalPagar = 0;
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( marca[i][j] == busquedaMarca ) { /* Determina si encontro la marca a buscar */
+                if ( ( i > 0 && i < fila - 1 ) && ( j > 0 && j < columna - 1 ) ) { 
+                    contadorPremium++;
+                    totalPagar += 300;
+                } else { 
+                    contadorEconomica++;
+                    totalPagar += 100;
+                }
+            }
+        }
+    }
+
+    cout << "\n- La marca " << busquedaMarca << " tiene " << contadorEconomica; 
+    cout << " contenedores en la zona economica, " << contadorPremium << " contenedores en la zona premium y el total a pagar es " << totalPagar << endl << endl;
+}
+
+float promedioPeso( int cantidadContenedores, int peso[fila][columna] ) {
+    int sumaPeso = 0;
+    float promedio = 0;
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( peso[i][j] != 0 ) {
+                sumaPeso += peso[i][j]; /* Acomula el peso del barco */
+            }
+        }
+    }
+    promedio = sumaPeso / cantidadContenedores;
+
+    return promedio;
+}
+
+int filaMasPesada( int peso[fila][columna] ) {
+    int acomuladorPorFila[fila] = { };
+    int valorFilaMasPesada = INT_MIN; 
+    int posicionFila = -1;
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( peso[i][j] != 0 ) {
+                acomuladorPorFila[i] += peso[i][j]; /* suma el peso total de cada fila para luego comparar */
+            }
+        }
+    }
+    for ( int i = 0; i < fila; i++ ) {
+        if ( acomuladorPorFila[i] > valorFilaMasPesada ) { /* Determina cual es la fila mas pesada */
+            valorFilaMasPesada = acomuladorPorFila[i];
+            posicionFila = i;
+        }
+    }
+
+    return posicionFila;
+}
+
+int columnaMenosPesada( int peso[fila][columna] ) {
+    int acomuladorPorColumna[columna] = { }; 
+    int valorColumnaMenosPesada = INT_MAX; 
+    int posicionColumna = -1;
+
+    for ( int j = 0; j < columna; j++ ) {
+        for ( int i = 0; i < fila; i++ ) {
+            if ( peso[i][j] != 0 ) {
+                acomuladorPorColumna[j] += peso[i][j]; /* suma el peso total de cada columna para luego comparar */
+            }
+        }
+    }
+    for ( int i = 0; i < columna; i++ ) {
+        if ( acomuladorPorColumna[i] < valorColumnaMenosPesada ) { /* Determina cual es la fila mas pesada */
+            valorColumnaMenosPesada = acomuladorPorColumna[i];
+            posicionColumna = i;
+        }
+    }
+
+    return posicionColumna;
+}
+
+int cantidadTipoContenedor( string tipoArticulo[fila][columna], string busquedaTipoContenedor ) {
+    int contadorTipoConenedor = 0;
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( tipoArticulo[i][j] == busquedaTipoContenedor ) { /* Determina si el tipo de contenedor si es el buscado */
+                contadorTipoConenedor++;
+            } 
+        }
+    }
+
+    return contadorTipoConenedor;
+}
+
+float promedioDelPuerto( int peso[fila][columna], string puertoCarga[fila][columna], string busquedaPuerto ) {
+    int suma = 0;
+    int contenedoresDelPuerto = 0;
+    float promedio = 0;
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( puertoCarga[i][j] == busquedaPuerto ) { /* Determina si el puerto de carga es el buscado */
+                suma += peso[i][j];
+                contenedoresDelPuerto++;
+            }
+        }
+    }
+    promedio = suma / contenedoresDelPuerto;
+
+    return promedio;
+}
+
+void empresaConMasPeso( int peso[fila][columna], string marca[fila][columna] ) {
+    int mayorPeso = INT_MIN;
+    string nombreMarca = "";
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( peso[i][j] > mayorPeso ) { /* Determina si el peso es mayor al actual */
+                mayorPeso = peso[i][j];
+                nombreMarca = marca[i][j];
+            }
+        }
+    }
+
+    cout << "- La marca " << nombreMarca << " tiene el contenedor mas pesado de " << mayorPeso << " kilos" << endl << endl;
+}
+
+void empresaConMenosPeso( int peso[fila][columna], string marca[fila][columna] ) {
+    int menorPeso = INT_MAX;
+    string nombreMarca = "";
+
+    for ( int i = 0; i < fila; i++ ) {
+        for ( int j = 0; j < columna; j++ ) {
+            if ( peso[i][j] < menorPeso ) { /* Determina si el peso es menor al actual */
+                menorPeso = peso[i][j];
+                nombreMarca = marca[i][j];
+            }
+        }
+    }
+
+    cout << "- La marca " << nombreMarca << " tiene el contenedor mas liviano de " << menorPeso << " kilos" << endl << endl;
+}
